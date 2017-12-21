@@ -2,6 +2,8 @@
   #include <Adafruit_NeoMatrix.h>
   #include <Adafruit_NeoPixel.h>
   #include <Servo.h>
+  #include <Wire.h>
+  #include <UnoWiFiDevEd.h>
   #define DEBUG_PIR 0
   #define DEBUG_PROX 1
   Servo servoMain; // Define our Servo
@@ -10,7 +12,15 @@
     NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS+ NEO_MATRIX_PROGRESSIVE+NEO_TILE_TOP+NEO_TILE_LEFT,
     NEO_GRB            + NEO_KHZ800);
-  
+
+  const char signMessage1[] PROGMEM  = {"HTTP/1.1 200 OK"};
+  const char signMessage2[] PROGMEM  = {"Content-Type: text/html"};
+  const char signMessage3[] PROGMEM  = {"<html><head></head><body>"};
+  const char signMessage4[] PROGMEM  = {"<input type=button onClick=\"var w=window.open('/arduino/digital/1/0','_parent');w.close();\"value='PET'><br>"};
+  const char signMessage5[] PROGMEM  = {"<input type=button onClick=\"var w=window.open('/arduino/digital/1/1','_parent');w.close();\"value='ALU'><br>"};
+  const char signMessage6[] PROGMEM  = {"<input type=button onClick=\"var w=window.open('/arduino/digital/2/0','_parent');w.close();\"value='Reactivate'><br>"};
+  const char signMessage7[] PROGMEM  = {"</body></html>"};
+
   
   
   int state = 0; // 0=empty, 1 =full, variable d'état dépendant du capteur ultrasonic vertical
@@ -79,10 +89,26 @@
     matrix.begin();
     servoMain.attach(10); // servo on digital pin 10
     servoMain.write(92);
+
+    Wifi.begin();
+    Wifi.println(F("Web Server is up"));
+
+     while(Wifi.available()){
+      process(Wifi);
+    }
+    delay(50);
+    
     Serial.begin(9600);
   }
+
+
+  
+
+  
   byte pirValue; // Place to store read PIR Value
   byte pirValue2;
+
+
   
   void update_PIR()
   {
@@ -90,9 +116,9 @@
     pirValue2 = digitalRead(PIR2_PIN);
     #if DEBUG_PIR==1
     Serial.print(pirValue);
-    Serial.println(" pyro 1 \t");
+    Serial.println(F"( pyro 1 \t"));
     Serial.print(pirValue2);
-    Serial.println(" pyro 2 \t");
+    Serial.println(F(" pyro 2 \t"));
     #endif
      return;
   }
@@ -142,9 +168,9 @@
     people=get_dist(ECHO2_PIN,TRIG2_PIN);
      #if DEBUG_PROX ==1
     Serial.print(level);
-    Serial.println(" cm (level) \t");
+    Serial.println(F(" cm (level) \t"));
     Serial.print(people);
-    Serial.println(" cm (people) \t");
+    Serial.println(F(" cm (people) \t"));
     #endif
     
   
@@ -178,7 +204,7 @@
       led=0;  
     }
     Serial.print(led);
-    Serial.println(" led \t");
+    Serial.println(F(" led \t"));
       
     delay(100);
     
@@ -195,20 +221,20 @@
       step=2;
     break;
     case 2:
-      Serial.println("Opening");
+      Serial.println(F("Opening"));
       servoMain.write(102);
       delay(2200);
       servoMain.write(92);
       step=3;
       break;
     case 3:
-      Serial.println("Charbon's hand is stuck");
+      Serial.println(F("Charbon's hand is stuck"));
       if (pirValue==0 && pirValue2==0)
        {delay(2000);
       step=4;}
       break;
     case 4:
-      Serial.println("Closing");
+      Serial.println(F("Closing"));
       servoMain.write(82);
       delay(2200);
       servoMain.write(92);
@@ -289,3 +315,44 @@
       break;
    }
   }
+
+  void process(WifiData client) {
+  // read the command
+  String command = client.readStringUntil('/');
+
+  // is "digital" command?
+  if (command == "webserver") {
+    WebServer(client);
+  }
+
+  if (command == "digital") {
+    digitalCommand(client);
+  }
+}
+
+void WebServer(WifiData client) {
+  
+            client.println(signMessage1);
+            client.println(signMessage2);
+            client.println(signMessage3);
+            
+            client.print(signMessage4);
+            client.print(signMessage5);
+            client.print(signMessage6);
+
+            client.print(signMessage7);
+          
+            client.print(DELIMITER); // very important to end the communication !!!
+         
+}
+
+void digitalCommand(WifiData client) {
+  int command, value = 0;
+
+  command = client.parseInt();  
+  // If the next character is a '/' it means we have an URL
+  // with a value like: "/digital/0/1"
+  if (client.read() == '/') {
+      value = client.parseInt();
+  }
+}
