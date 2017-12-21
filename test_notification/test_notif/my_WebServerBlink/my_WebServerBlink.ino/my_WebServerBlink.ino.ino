@@ -11,11 +11,19 @@ http://www.arduino.org/learning/tutorials/boards-tutorials/webserverblink
 
 #include <Wire.h>
 #include <UnoWiFiDevEd.h>
+#include <avr/pgmspace.h>
+
+const char signMessage1[] PROGMEM  = {"HTTP/1.1 200 OK"};
+const char signMessage2[] PROGMEM  = {"Content-Type: text/html"};
+const char signMessage3[] PROGMEM  = {"<html><head></head><body>"};
+const char signMessage4[] PROGMEM  = {"<input type=button onClick=\"var w=window.open('/arduino/digital/1/0','_parent');w.close();\"value='PET'><br>"};
+const char signMessage5[] PROGMEM  = {"<input type=button onClick=\"var w=window.open('/arduino/digital/1/1','_parent');w.close();\"value='ALU'><br>"};
+const char signMessage6[] PROGMEM  = {"<input type=button onClick=\"var w=window.open('/arduino/digital/2/0','_parent');w.close();\"value='Reactivate'><br>"};
+const char signMessage7[] PROGMEM  = {"</body></html>"};
 
 void setup() {
-    pinMode(13,OUTPUT);
     Wifi.begin();
-    Wifi.println("Web Server is up");
+    Wifi.println(F("Web Server is up"));
     Serial.begin(9600);
 }
 
@@ -24,7 +32,7 @@ void loop() {
     while(Wifi.available()){
       process(Wifi);
     }
-  delay(50);
+    delay(50);
 }
 
 void process(WifiData client) {
@@ -43,17 +51,15 @@ void process(WifiData client) {
 
 void WebServer(WifiData client) {
   
-            client.println("HTTP/1.1 200 OK");
-            client.println("Content-Type: text/html");
-            client.println("<html><head></head><body>");
-            client.println();
+            client.println(signMessage1);
+            client.println(signMessage2);
+            client.println(signMessage3);
             
-            client.print("<input type=button onClick=\"var w=window.open('/arduino/digital/0/0','_parent');w.close();\"value='PET'><br>");
-            client.print("<input type=button onClick=\"var w=window.open('/arduino/digital/0/1','_parent');w.close();\"value='ALU'><br>");
-            client.print("<input type=button onClick=\"var w=window.open('/arduino/digital/1/0','_parent');w.close();\"value='Reactivate'><br>");
+            client.print(signMessage4);
+            client.print(signMessage5);
+            client.print(signMessage6);
 
-            client.print("</body>");
-            client.println("</html>");
+            client.print(signMessage7);
           
             client.print(DELIMITER); // very important to end the communication !!!
          
@@ -68,17 +74,4 @@ void digitalCommand(WifiData client) {
   if (client.read() == '/') {
       value = client.parseInt();
   }
-  // Send feedback to client
-
-  if(command == '0'){
-    client.println("Status: 200 OK\n");
-    client.print(F("Type of bin set to "));
-    client.print(value);
-    client.print(EOL);    //char terminator
-  }else{
-    client.println("Status: 200 OK\n");
-    client.print(F("ROBIN was succesfully reactivated!"));
-    client.print(EOL);    //char terminator
-  }
-
 }
