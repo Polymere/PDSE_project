@@ -13,7 +13,7 @@
 
 
 #define DEBUG_PIR 0
-#define DEBUG_PROX 1
+#define DEBUG_PROX 0
 
 #define WASTE_ID 0
 #define ALU_ID 1
@@ -217,11 +217,11 @@ switch (led_state) //mettre les changements de led selon l'état
 {
     int i;
     int j;
-case 0:
+case 3:
     matrix.fillScreen(0);
     matrix.show();
     break;
-case 1:
+case 2:
     matrix.fillScreen(0);
     for (i=0;i<8;i++)
     {
@@ -236,7 +236,7 @@ case 1:
         }
         matrix.show();
     break;
-    case 2:
+    case 1:
     matrix.fillScreen(0);
     for (i=0;i<8;i++)
     {
@@ -251,7 +251,7 @@ case 1:
     }
     matrix.show();
     break; 
-    case 3:
+    case 0:
     matrix.fillScreen(0);
     for (i=0;i<8;i++)
     {
