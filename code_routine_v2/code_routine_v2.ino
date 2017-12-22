@@ -39,6 +39,9 @@ const char signMessage6[] PROGMEM  = {"<input type=button onClick=\"var w=window
 const char signMessage7[] PROGMEM  = {"<input type=button onClick=\"var w=window.open('/arduino/digital/1/3','_parent');w.close();\"value='PET'><br>"};
 const char signMessage8[] PROGMEM  = {"<input type=button onClick=\"var w=window.open('/arduino/digital/1/4','_parent');w.close();\"value='Paper'><br>"};
 const char signMessage9[] PROGMEM  = {"</body></html>"};
+const char* const string_table[] PROGMEM = {signMessage1, signMessage2, signMessage3, signMessage4, signMessage5, signMessage6, signMessage7};
+
+char buffer[200]; 
 
 
 
@@ -109,11 +112,12 @@ void setup() {
     matrix.begin();
     servoMain.attach(10); // servo on digital pin 10
     servoMain.write(92);
+    Serial.begin(9600);
+    
 #if Camilla==1
     Wifi.begin();
     Wifi.println(F("Web Server is up"));
     //unsigned long t1=millis();
-    Serial.begin(9600);
  
 #endif
 }
@@ -161,9 +165,10 @@ void loop() {
   
     while(Wifi.available() && !type_set){
       process(Wifi);
-    }
       Serial.print("Wifi available");
-     }
+    }
+      
+     
 
     update_PIR();
     motion_detected=(pirValue==1 || pirValue2==1);
@@ -331,20 +336,14 @@ void process(WifiData client)
 
 void WebServer(WifiData client) 
 {
-    
-            client.println(signMessage1);
-            client.println(signMessage2);
-            client.println(signMessage3);
+      for (int i = 0; i < 7; i++)
+      {
+        strcpy_P(buffer, (char*)pgm_read_word(&(string_table[i]))); // Necessary casts and dereferencing, just copy.
+        client.println(buffer);
+        delay( 500 );
+      }
             
-            client.print(signMessage4);
-            client.print(signMessage5);
-            client.print(signMessage6);
-            client.print(signMessage7);
-            client.print(signMessage8);
-
-            client.print(signMessage9);
-            
-            client.print(DELIMITER); // very important to end the communication !!!
+      client.print(DELIMITER); // very important to end the communication !!!
         
 }
 
