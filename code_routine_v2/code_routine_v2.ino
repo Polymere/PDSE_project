@@ -85,7 +85,12 @@ const byte cross[8][8] PROGMEM={{1, 0, 0, 0, 0, 0, 0, 1},
                         {0, 1, 0, 0, 0, 0, 1, 0},
                         {1, 0, 0, 0, 0, 0, 0, 1}};  
                                 
-const uint16_t color = matrix.Color(0,150,0);
+st uint16_t colorAlu=matrix.Color(128,128,128);
+const uint16_t colorGlass=matrix.Color(34,191,13);
+const uint16_t colorPet=matrix.Color(16,55,209);
+const uint16_t colorWaste=matrix.Color(216,21,21);
+const uint16_t colorPaper=matrix.Color(255,255,0);
+const uint16_t color[NUMBER_TYPE] ={colorWaste,colorAlu,colorGlass,colorPet,colorPaper};
 
 void setup() {
     // put your setup code here, to run once:
@@ -106,6 +111,10 @@ void setup() {
 #if Camilla==1
     Wifi.begin();
     Wifi.println(F("Web Server is up"));
+    unsigned long 
+    unsigned long t1=micros()
+    
+    
 
     while(Wifi.available()){
     process(Wifi);
@@ -229,8 +238,8 @@ case 2:
         {
         if (eye_1[i][j]==1)
         {
-            matrix.drawPixel(i,j,color);
-            matrix.drawPixel(i,j+8,color);
+            matrix.drawPixel(i,j,color[trash_type]);
+            matrix.drawPixel(i,j+8,color[trash_type]);
         }
         }
         }
@@ -244,8 +253,8 @@ case 2:
         {
         if (eye_2[i][j]==1)
         {
-            matrix.drawPixel(i,j,color);
-            matrix.drawPixel(i,j+8,color);
+            matrix.drawPixel(i,j,color[trash_type]);
+            matrix.drawPixel(i,j+8,color[trash_type]);
         }
         }
     }
@@ -259,8 +268,8 @@ case 2:
         {
         if (eye_3[i][j]==1)
         {
-            matrix.drawPixel(i,j,color);
-            matrix.drawPixel(i,j+8,color);
+            matrix.drawPixel(i,j,color[trash_type]);
+            matrix.drawPixel(i,j+8,color[trash_type]);
         }
         }
     }
@@ -274,8 +283,8 @@ case 2:
         {
         if (cross[i][j]==1)
         {
-            matrix.drawPixel(i,j,color);
-            matrix.drawPixel(i,j+8,color);
+            matrix.drawPixel(i,j,colorWaste);
+            matrix.drawPixel(i,j+8,colorWaste);
         }
         }
     }
@@ -337,15 +346,15 @@ void WebServer(WifiData client)
             client.print(DELIMITER); // very important to end the communication !!!
         
 }
-
+int trash_type;
 void digitalCommand(WifiData client) 
 {
-    int command, value = 0;
+    int command, trash_type = 0;
     command = client.parseInt();  
     // If the next character is a '/' it means we have an URL
     // with a value like: "/digital/0/1"
     if (client.read() == '/') {
-        value = client.parseInt();
+        trash_type = client.parseInt();
     }
 }*/
 #endif
