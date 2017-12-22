@@ -111,15 +111,16 @@ void setup() {
 #if Camilla==1
     Wifi.begin();
     Wifi.println(F("Web Server is up"));
-    unsigned long 
-    unsigned long t1=micros()
+    unsigned long t1=millis()
     
     
-
-    while(Wifi.available()){
-    process(Wifi);
-    }
-    delay(50);
+  while(t1<10000)
+  {
+    if(Wifi.available())
+      process(Wifi);
+     else 
+        Serial.println("Not available");
+  }
 #endif
     Serial.begin(9600);
 }
