@@ -4,7 +4,7 @@
 #include <Servo.h>
 
 
-#define Camilla 0
+#define Camilla 1
 
 #if Camilla==1
 #include <Wire.h>
@@ -21,7 +21,8 @@
 #define PET_ID 3
 #define PAPER_ID 4
 
-
+bool type_set = false;
+int trash_type;
 Servo servoMain; // Define our Servo
 const int LED_PIN = 3;
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8,1,2, LED_PIN,
@@ -85,12 +86,12 @@ const byte cross[8][8] PROGMEM={{1, 0, 0, 0, 0, 0, 0, 1},
                         {0, 1, 0, 0, 0, 0, 1, 0},
                         {1, 0, 0, 0, 0, 0, 0, 1}};  
                                 
-st uint16_t colorAlu=matrix.Color(128,128,128);
+const uint16_t colorAlu=matrix.Color(128,128,128);
 const uint16_t colorGlass=matrix.Color(34,191,13);
 const uint16_t colorPet=matrix.Color(16,55,209);
 const uint16_t colorWaste=matrix.Color(216,21,21);
 const uint16_t colorPaper=matrix.Color(255,255,0);
-const uint16_t color[NUMBER_TYPE] ={colorWaste,colorAlu,colorGlass,colorPet,colorPaper};
+const uint16_t color[5] ={colorWaste,colorAlu,colorGlass,colorPet,colorPaper};
 
 void setup() {
     // put your setup code here, to run once:
@@ -111,18 +112,10 @@ void setup() {
 #if Camilla==1
     Wifi.begin();
     Wifi.println(F("Web Server is up"));
-    unsigned long t1=millis()
-    
-    
-  while(t1<10000)
-  {
-    if(Wifi.available())
-      process(Wifi);
-     else 
-        Serial.println("Not available");
-  }
-#endif
+    //unsigned long t1=millis();
     Serial.begin(9600);
+ 
+#endif
 }
 
 byte pirValue; // Place to store read PIR Value
@@ -164,6 +157,13 @@ void loop() {
     static byte step = 1;  //step dans le processus d'ouverture
     static byte led_state=3; // état de proximité des gens
     static boolean motion_detected=false;
+
+  
+    while(Wifi.available() && !type_set){
+      process(Wifi);
+    }
+      Serial.print("Wifi available");
+     }
 
     update_PIR();
     motion_detected=(pirValue==1 || pirValue2==1);
@@ -316,7 +316,7 @@ byte get_led_state(int distance,boolean full,byte prev_state)
     
 }
 #if Camilla==1
-/*
+
 void process(WifiData client) 
 {
     // read the command
@@ -347,7 +347,7 @@ void WebServer(WifiData client)
             client.print(DELIMITER); // very important to end the communication !!!
         
 }
-int trash_type;
+
 void digitalCommand(WifiData client) 
 {
     int command, trash_type = 0;
@@ -356,6 +356,7 @@ void digitalCommand(WifiData client)
     // with a value like: "/digital/0/1"
     if (client.read() == '/') {
         trash_type = client.parseInt();
+        type_set = true;
     }
-}*/
+}
 #endif
